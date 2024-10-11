@@ -1,0 +1,55 @@
+{
+	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+	"organizeImports": {
+		"enabled": true
+	},
+	"formatter": {
+		"enabled": true,
+		"indentStyle": "tab",
+		"indentWidth": 2,
+		"lineWidth": 100
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"correctness": {
+				"noUnusedVariables": {
+					"level": "info"
+				},
+				"noNodejsModules": {
+					"level": "off"
+				},
+				"useImportExtensions": {
+					"level": "off"
+			},
+			"suspicious": {
+				"noConsoleLog": "off",
+				"noExplicitAny": "warn"
+			},
+			"style": {
+				"useImportType": "off",
+				"useExportType": "off",
+				"noDefaultExport": "off",
+				"noInferrableTypes": "off",
+				"useNamingConvention": {
+					"level": "warn",
+					"options": {
+						"strictCase": false,
+						"conventions": [
+							{
+								"selector": {
+									"kind": "interface",
+									"scope": "global"
+								},
+								"formats": ["PascalCase"],
+								"match": "I(.*)|(.*?)Error"
+							}
+						]
+					}
+				},
+				"noParameterProperties": "off"
+			},
+			"all": true
+		}
+	}
+}
