@@ -9,7 +9,6 @@ datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
 }
-
 model User {
   id String @id @default(uuid())
   name String
@@ -27,4 +26,28 @@ model Role {
   id Int @id @default(autoincrement())
   name String @unique
   users User[]
+  permission Permission[]
+
+
+  @@map("roles")
+}
+
+model Permission {
+  id Int @id @default(autoincrement())
+  name String @unique
+  roleName String
+  role Role[]
+
+  @@map("permissions")
+}
+
+model Order {
+  id String @id @default(uuid())
+  productInfo String
+  customerInfo String
+  status String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("orders")
 }
