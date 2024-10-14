@@ -18,7 +18,7 @@ class UserRepository implements IUserRepository {
 		}
 	}
 
-	async findByEmail({ email }): Promise<User[] | null> {
+	async findByEmail({ email }): Promise<User | null> {
 		try {
 			const userByEmail = await prismaClient.user.findUniqueOrThrow({
 				where: {
@@ -26,7 +26,7 @@ class UserRepository implements IUserRepository {
 				},
 			});
 
-			return [userByEmail];
+			return userByEmail;
 		} catch (e) {
 			return;
 		}
