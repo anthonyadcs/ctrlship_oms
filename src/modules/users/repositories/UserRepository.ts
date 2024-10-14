@@ -1,6 +1,6 @@
 import { User } from "@prisma/client";
 import { prismaClient } from "../../../database/prismaClient";
-import { ICreateUserDTO, IUserRepository } from "./interfaces/IUserRepository";
+import { ICreateUserDTO, IUpdateUserDTO, IUserRepository } from "./interfaces/IUserRepository";
 
 class UserRepository implements IUserRepository {
 	async createUser({ name, email, passwordHash, roleName }: ICreateUserDTO): Promise<void> {
@@ -29,6 +29,31 @@ class UserRepository implements IUserRepository {
 			return userByEmail;
 		} catch (e) {
 			return;
+		}
+	}
+
+	async updateUser({ userEmail }: string, { toUpdate }: Partial<IUpdateUserDTO>): Promise<void> {
+		try {
+			const fieldsToUpdate: Partial<IUpdateUserDTO> = {};
+
+			if (toUpdate.email) {
+				fieldsToUpdate.email = toUpdate.email;
+			}
+
+			if (toUpdate.passwordHash) {
+				fieldsToUpdate.passwordHash = toUpdate.passwordHash;
+			}
+
+			if (toUpdate.name) {
+				fieldsToUpdate.name = toUpdate.name;
+			}
+
+			await prismaClient.user.update({
+				where: { email: userEmail },
+				data: fieldsToUpdate,
+			});
+		} catch (error) {
+			throw new Error(error);
 		}
 	}
 }
