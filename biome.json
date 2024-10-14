@@ -15,12 +15,7 @@
 			"correctness": {
 				"noUnusedVariables": {
 					"level": "info"
-				},
-				"noNodejsModules": {
-					"level": "off"
-				},
-				"useImportExtensions": {
-					"level": "off"
+				}
 			},
 			"suspicious": {
 				"noConsoleLog": "off",
@@ -48,8 +43,7 @@
 					}
 				},
 				"noParameterProperties": "off"
-			},
-			"all": true
+			}
 		}
 	}
 }
