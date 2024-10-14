@@ -35,7 +35,7 @@ model Role {
 model Permission {
   id Int @id @default(autoincrement())
   name String @unique
-  roleName String
+  description String
   role Role[]
 
   @@map("permissions")
