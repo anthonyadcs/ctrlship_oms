@@ -109,7 +109,8 @@
 		"exclude": ["node_modules"],
 		"paths": {
 			"@modules/*": ["./src/modules/*"],
-			"@database/*": ["./src/database/*"]
+			"@database/*": ["./src/database/*"],
+			"@utils/*": ["./src/utils/*"]
 		}
 	}
 }

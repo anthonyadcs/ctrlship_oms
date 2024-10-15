@@ -8,15 +8,18 @@ interface ICreateUserDTO {
 }
 
 type IUpdateUserDTO = {
-	name: string;
-	email: string;
-	passwordHash: string;
+	toUpdate: {
+		name?: string;
+		email?: string;
+		passwordHash?: string;
+	};
 };
 
 interface IUserRepository {
 	createUser({ name, email, passwordHash, roleName }: ICreateUserDTO): Promise<void>;
-	updateUser({ userEmail }: string, { toUpdate }: Partial<IUpdateUserDTO>);
-	findByEmail({ email }): Promise<User | null>;
+	updateUser(userEmail: string, toUpdate: Partial<IUpdateUserDTO>);
+	findByEmail(email): Promise<User | null>;
+	findPermission(userRole);
 }
 
 export { IUserRepository, ICreateUserDTO, IUpdateUserDTO };

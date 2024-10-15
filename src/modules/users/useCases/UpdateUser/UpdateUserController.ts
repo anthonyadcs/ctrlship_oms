@@ -4,15 +4,16 @@ import { Request, Response } from "express";
 import { z } from "zod";
 import { UpdateUserUseCase } from "./UpdateUserUseCase";
 
-const updateUserSchema = z.object({
-	//Informações necessárias para atualizar
+const updatedUserSchema = z.object({
+	currentEmail: z.string().email(),
+	email: z.string().email().optional(),
+	name: z.string().min(3).max(30).optional(),
+	password: z.string().min(6).max(128).optional(),
+});
+
+const updaterUserSchema = z.object({
 	email: z.string().email(),
 	password: z.string().min(3).max(128),
-
-	//Novas informações que poderão ser atualizadas
-	newEmail: z.string().email().optional(),
-	newName: z.string().min(3).max(30).optional(),
-	newPassword: z.string().min(6).max(128).optional(),
 });
 
 class UpdateUserController {
@@ -20,7 +21,9 @@ class UpdateUserController {
 
 	async handle(request: Request, response: Response) {
 		try {
-			updateUserSchema.parse(request.body);
+			const { updatedUser, updaterUser } = request.body;
+			updatedUserSchema.parse(updatedUser);
+			updaterUserSchema.parse(updaterUser);
 		} catch (error) {
 			return response.status(422).json({
 				message: "Parâmetros incorretos. Por favor, tente novamente mais tarde",
@@ -28,15 +31,9 @@ class UpdateUserController {
 			});
 		}
 
-		const { email, password, newName, newPassword, newEmail } = request.body;
+		const { updatedUser, updaterUser } = request.body;
 
-		const updateUser = await this.updateUserUseCase.execute({
-			email,
-			password,
-			newName,
-			newPassword,
-			newEmail,
-		});
+		const updateUser = await this.updateUserUseCase.execute({ updatedUser, updaterUser });
 
 		return response.status(updateUser.status).json(updateUser);
 	}

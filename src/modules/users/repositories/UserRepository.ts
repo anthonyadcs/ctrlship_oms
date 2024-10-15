@@ -1,4 +1,4 @@
-import { User } from "@prisma/client";
+import { Permission, User } from "@prisma/client";
 import { prismaClient } from "../../../database/prismaClient";
 import { ICreateUserDTO, IUpdateUserDTO, IUserRepository } from "./interfaces/IUserRepository";
 
@@ -18,42 +18,48 @@ class UserRepository implements IUserRepository {
 		}
 	}
 
-	async findByEmail({ email }): Promise<User | null> {
+	async findByEmail(email): Promise<User | null> {
 		try {
 			const userByEmail = await prismaClient.user.findUniqueOrThrow({
 				where: {
 					email,
 				},
 			});
-
 			return userByEmail;
-		} catch (e) {
-			return;
+		} catch (error) {
+			return undefined;
 		}
 	}
 
-	async updateUser({ userEmail }: string, { toUpdate }: Partial<IUpdateUserDTO>): Promise<void> {
+	async updateUser(userEmail: string, { toUpdate }: Partial<IUpdateUserDTO>): Promise<void> {
 		try {
-			const fieldsToUpdate: Partial<IUpdateUserDTO> = {};
-
-			if (toUpdate.email) {
-				fieldsToUpdate.email = toUpdate.email;
+			for (const [key, value] of Object.entries(toUpdate)) {
+				await prismaClient.user.update({
+					where: { email: userEmail },
+					data: {
+						[key]: value,
+					},
+				});
 			}
-
-			if (toUpdate.passwordHash) {
-				fieldsToUpdate.passwordHash = toUpdate.passwordHash;
-			}
-
-			if (toUpdate.name) {
-				fieldsToUpdate.name = toUpdate.name;
-			}
-
-			await prismaClient.user.update({
-				where: { email: userEmail },
-				data: fieldsToUpdate,
-			});
 		} catch (error) {
-			throw new Error(error);
+			throw new Error("Erro ao atualizar usuário no servidor");
+		}
+	}
+
+	async findPermission(userRole: string): Promise<Permission[] | undefined> {
+		try {
+			const permissions = await prismaClient.permission.findMany({
+				where: {
+					role: {
+						some: {
+							name: userRole,
+						},
+					},
+				},
+			});
+			return permissions;
+		} catch (error) {
+			return undefined;
 		}
 	}
 }

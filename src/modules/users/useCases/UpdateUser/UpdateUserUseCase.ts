@@ -1,90 +1,92 @@
 import UserRepository from "@modules/users/repositories/UserRepository";
+import { comparePasswords } from "@utils/comparePasswords";
 import bcrypt from "bcrypt";
 
+interface IRequest {
+	updaterUser: {
+		email: string;
+		password: string;
+	};
+
+	updatedUser: {
+		currentEmail: string;
+		name?: string;
+		email?: string;
+		passwordHash?: string;
+	};
+}
+
 class UpdateUserUseCase {
-	async execute({ email, password, newEmail, newPassword, newName }) {
-		const userExists = await UserRepository.findByEmail({ email });
-		const isPasswordCorrect = await bcrypt.compare(password, userExists.passwordHash);
+	async execute({ updatedUser, updaterUser }: IRequest) {
+		const updatedUserExists = await UserRepository.findByEmail(updatedUser.currentEmail);
 
-		const userEmail = email;
+		const updaterUserExists = await UserRepository.findByEmail(updaterUser.email);
 
-		if (!userExists || !isPasswordCorrect) {
+		//Valida se o usuário atualizador e o usuário atualizado existem
+		if (updaterUserExists && updatedUserExists) {
+			//Verifica se o usuário tem permissão para atualizar usuários
+			const permissions = await UserRepository.findPermission(updaterUserExists.roleName);
+
+			const permission = permissions.find((permission) => {
+				return permission.name === "update_user_admin" || permission.name === "update_user_company";
+			});
+
+			if (
+				permission === undefined ||
+				(permission.name === "update_user_company" && updatedUserExists.roleName === "admin")
+			) {
+				return {
+					status: 403,
+					message: "Você não possui permissão para atualizar usuários.",
+				};
+			}
+		} else {
 			return {
 				status: 404,
-				message: "Email ou senha incorretas.",
+				message: "Usuário a atualizar ou usuário atualizador não encontrados",
 			};
 		}
 
-		if (newEmail === undefined && newName === undefined && newPassword === undefined) {
+		//Verifica se a senha do usuário atualizador é correta
+		if (!comparePasswords(updaterUser.password, updaterUserExists.passwordHash)) {
 			return {
-				status: 422,
-				message: "É preciso fornecer ao menos um campo que deve ser atualizado.",
+				status: 401,
+				message: "Email ou senha  do usuário atualizador incorretos.",
 			};
 		}
 
-		if (newEmail !== undefined) {
+		// Gera o hash de acordo com a nova senha fornecida
+		const newPasswordHash = await bcrypt.hash(updatedUser.passwordHash, 10);
+
+		updatedUser.passwordHash = newPasswordHash;
+
+		// Valida se os dados de atualização são válidos e realiza a solicitação para o banco de dados
+		for (const [key, value] of Object.entries(updatedUser)) {
 			try {
-				await UserRepository.updateUser(
-					{ userEmail },
-					{
+				if (!value) {
+					throw new Error("Pelo menos um campo de atualização deve ser fornecido.");
+				}
+
+				if (key !== "currentEmail") {
+					await UserRepository.updateUser(updatedUser.currentEmail, {
 						toUpdate: {
-							email: newEmail,
+							[key]: value,
 						},
-					},
-				);
+					});
+				} else {
+					continue;
+				}
+				return {
+					status: 201,
+					message: "Dados alterados com sucesso",
+				};
 			} catch (error) {
 				return {
-					status: 500,
-					message: "Ocorreu um erro ao atualizar o email.",
-					errorMessage: error.message,
+					status: 400,
+					message: error.message,
 				};
 			}
 		}
-
-		if (newPassword !== undefined) {
-			try {
-				const passwordHash = await bcrypt.hash(newPassword, 10);
-
-				await UserRepository.updateUser(
-					{ userEmail },
-					{
-						toUpdate: {
-							passwordHash,
-						},
-					},
-				);
-			} catch (error) {
-				return {
-					status: 500,
-					message: "Ocorreu um erro ao atualizar a senha.",
-					errorMessage: error.message,
-				};
-			}
-		}
-
-		if (newName !== undefined) {
-			try {
-				await UserRepository.updateUser(
-					{ userEmail },
-					{
-						toUpdate: {
-							name: newName,
-						},
-					},
-				);
-			} catch (error) {
-				return {
-					status: 500,
-					message: "Ocorreu um erro ao atualizar o nome do usuário.",
-					errorMessage: error.message,
-				};
-			}
-		}
-
-		return {
-			status: 200,
-			message: "Dados alterados com sucesso!",
-		};
 	}
 }
 
