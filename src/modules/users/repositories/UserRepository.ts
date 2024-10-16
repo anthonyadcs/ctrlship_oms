@@ -3,18 +3,14 @@ import { prismaClient } from "../../../database/prismaClient";
 import { ICreateUserDTO, IUpdateUserDTO, IUserRepository } from "./interfaces/IUserRepository";
 
 class UserRepository implements IUserRepository {
-	async createUser({ name, email, passwordHash, roleName }: ICreateUserDTO): Promise<void> {
+	async createUser(createdUser: ICreateUserDTO): Promise<void> {
 		try {
+			console.log(createdUser);
 			await prismaClient.user.create({
-				data: {
-					name,
-					email,
-					passwordHash,
-					roleName,
-				},
+				data: createdUser,
 			});
 		} catch (error) {
-			throw new Error(error);
+			throw new Error("Erro ao criar usuário no servidor.");
 		}
 	}
 
@@ -42,7 +38,7 @@ class UserRepository implements IUserRepository {
 				});
 			}
 		} catch (error) {
-			throw new Error("Erro ao atualizar usuário no servidor");
+			throw new Error("Erro ao atualizar usuário no servidor.");
 		}
 	}
 

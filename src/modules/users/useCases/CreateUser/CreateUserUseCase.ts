@@ -1,42 +1,104 @@
+import { User } from "@prisma/client";
+import { comparePasswords } from "@utils/comparePasswords";
 import bcrypt from "bcrypt";
 import UserRepository from "../../repositories/UserRepository";
 import { createUserController } from "./index";
 
 interface IRequest {
-	name: string;
-	email: string;
-	password: string;
-	roleName: string;
+	createrUser: {
+		email: string;
+		password: string;
+	};
+	createdUser: {
+		name: string;
+		email: string;
+		passwordHash: string;
+		roleName: string;
+	};
 }
-
 class CreateUserUseCase {
-	async execute({ name, email, password, roleName }: IRequest) {
-		const userExists = await UserRepository.findByEmail({ email });
-		console.log(userExists);
+	async execute({ createrUser, createdUser }: IRequest) {
+		const createdUserExists = await UserRepository.findByEmail(createdUser.email);
+		const createrUserExists = await UserRepository.findByEmail(createrUser.email);
 
-		if (userExists) {
-			console.log(userExists);
+		if (createrUserExists && !createdUserExists) {
+			//Verifica se o usuário tem permissão para atualizar usuários
+			const permissions = await UserRepository.findPermission(createrUserExists.roleName);
+
+			const permissionToCreate = permissions.find((permission) => {
+				return permission.name === "create_user_admin" || permission.name === "create_user_company";
+			});
+
+			if (
+				permissionToCreate === undefined ||
+				(permissionToCreate.name === "create_user_company" &&
+					createdUserExists.roleName === "admin")
+			) {
+				return {
+					status: 403,
+					message: "Você não possui permissão para cadastrar este usuário.",
+				};
+			}
+		} else {
 			return {
-				status: 409,
-				message: "Usuário já cadastrado",
+				status: 404,
+				message: "Usuário a atualizar ou usuário atualizador não encontrados.",
 			};
 		}
 
-		const passwordHash = await bcrypt.hash(password, 10);
+		if (!comparePasswords(createrUserExists.passwordHash, createrUser.password)) {
+			return {
+				status: 401,
+				message: "Email ou senha  do usuário atualizador incorretos.",
+			};
+		}
+
+		for (const value in createdUser) {
+			if (!createdUser[value]) {
+				return {
+					status: 400,
+					message: "Todos os campos devem ser preenchidos.",
+				};
+			}
+		}
+
+		const newPasswordHash = await bcrypt.hash(createdUser.passwordHash, 10);
+
+		createdUser.passwordHash = newPasswordHash;
 
 		try {
-			await UserRepository.createUser({ name, email, passwordHash, roleName });
-			return {
-				status: 201,
-				message: "Usuário criado com sucesso",
-			};
+			await UserRepository.createUser(createdUser);
 		} catch (error) {
-			return {
-				status: 500,
-				message: "Falha ao salvar o usuário",
-				errorMessage: error.message,
-			};
+			console.error(error);
 		}
+
+		return {
+			status: 200,
+			message: "Não finalizado",
+		};
+
+		// const newUserPasswordHash = await bcrypt.hash(createdUser.password, 10);
+
+		// const newUser: Partial<User> = {
+		// 	name: createdUser.name,
+		// 	email: createdUser.email,
+		// 	passwordHash: newUserPasswordHash,
+		// 	roleName: createdUser.roleName,
+		// };
+
+		// try {
+		// 	await UserRepository.createUser({ newUser });
+		// 	return {
+		// 		status: 201,
+		// 		message: "Usuário criado com sucesso",
+		// 	};
+		// } catch (error) {
+		// 	return {
+		// 		status: 500,
+		// 		message: "Falha ao salvar o usuário",
+		// 		errorMessage: error.message,
+		// 	};
+		// }
 	}
 }
 

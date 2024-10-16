@@ -2,10 +2,15 @@ import { Request, Response } from "express";
 import { z } from "zod";
 import { CreateUserUseCase } from "./CreateUserUseCase";
 
-const createUserSchema = z.object({
-	name: z.string().min(3).max(30),
+const createrUserSchema = z.object({
 	email: z.string().email(),
 	password: z.string().min(6).max(128),
+});
+
+const createdUserSchema = z.object({
+	name: z.string().min(3).max(30),
+	email: z.string().email(),
+	passwordHash: z.string().min(6).max(128),
 	roleName: z.string(),
 });
 
@@ -13,8 +18,10 @@ class CreateUserController {
 	constructor(private createUserUseCase: CreateUserUseCase) {}
 
 	async handle(request: Request, response: Response) {
+		const { createrUser, createdUser } = request.body;
 		try {
-			createUserSchema.parse(request.body);
+			createrUserSchema.parse(createrUser);
+			createdUserSchema.parse(createdUser);
 		} catch (e) {
 			return response.status(422).json({
 				message: "Parâmetros incorretos. Por favor, tente novamente mais tarde",
@@ -22,9 +29,7 @@ class CreateUserController {
 			});
 		}
 
-		const { name, email, password, roleName } = request.body;
-
-		const createUser = await this.createUserUseCase.execute({ name, email, password, roleName });
+		const createUser = await this.createUserUseCase.execute({ createrUser, createdUser });
 
 		return response.status(createUser.status).json(createUser);
 	}
