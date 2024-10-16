@@ -4,12 +4,12 @@ import { updateUserController } from "../modules/users/useCases/UpdateUser/index
 
 const userRoutes = Router();
 
-userRoutes.post("/user", (request, response) => {
-	return createUserController.handle(request, response);
+userRoutes.post("/user", async (request, response) => {
+	return await createUserController.handle(request, response);
 });
 
-userRoutes.patch("/user", (request, response) => {
-	return updateUserController.handle(request, response);
+userRoutes.patch("/user", async (request, response) => {
+	return await updateUserController.handle(request, response);
 });
 
 export { userRoutes };

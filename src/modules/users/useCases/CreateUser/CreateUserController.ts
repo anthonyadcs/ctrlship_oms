@@ -17,7 +17,7 @@ const createdUserSchema = z.object({
 class CreateUserController {
 	constructor(private createUserUseCase: CreateUserUseCase) {}
 
-	async handle(request: Request, response: Response) {
+	async handle(request: Request, response: Response): Promise<Response> {
 		const { createrUser, createdUser } = request.body;
 		try {
 			createrUserSchema.parse(createrUser);

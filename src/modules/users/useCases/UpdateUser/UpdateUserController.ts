@@ -17,7 +17,7 @@ const updaterUserSchema = z.object({
 class UpdateUserController {
 	constructor(private updateUserUseCase: UpdateUserUseCase) {}
 
-	async handle(request: Request, response: Response) {
+	async handle(request: Request, response: Response): Promise<Response> {
 		try {
 			const { updatedUser, updaterUser } = request.body;
 			updatedUserSchema.parse(updatedUser);
