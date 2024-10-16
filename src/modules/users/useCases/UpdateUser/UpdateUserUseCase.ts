@@ -82,8 +82,8 @@ class UpdateUserUseCase {
 				};
 			} catch (error) {
 				return {
-					status: 400,
-					message: error.message,
+					status: 500,
+					message: error,
 				};
 			}
 		}

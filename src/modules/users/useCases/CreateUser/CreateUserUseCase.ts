@@ -1,8 +1,6 @@
-import { User } from "@prisma/client";
 import { comparePasswords } from "@utils/comparePasswords";
 import bcrypt from "bcrypt";
 import UserRepository from "../../repositories/UserRepository";
-import { createUserController } from "./index";
 
 interface IRequest {
 	createrUser: {
@@ -69,36 +67,16 @@ class CreateUserUseCase {
 		try {
 			await UserRepository.createUser(createdUser);
 		} catch (error) {
-			console.error(error);
+			return {
+				status: 500,
+				message: error,
+			};
 		}
 
 		return {
-			status: 200,
-			message: "Não finalizado",
+			status: 201,
+			message: "Usuário criado com sucesso.",
 		};
-
-		// const newUserPasswordHash = await bcrypt.hash(createdUser.password, 10);
-
-		// const newUser: Partial<User> = {
-		// 	name: createdUser.name,
-		// 	email: createdUser.email,
-		// 	passwordHash: newUserPasswordHash,
-		// 	roleName: createdUser.roleName,
-		// };
-
-		// try {
-		// 	await UserRepository.createUser({ newUser });
-		// 	return {
-		// 		status: 201,
-		// 		message: "Usuário criado com sucesso",
-		// 	};
-		// } catch (error) {
-		// 	return {
-		// 		status: 500,
-		// 		message: "Falha ao salvar o usuário",
-		// 		errorMessage: error.message,
-		// 	};
-		// }
 	}
 }
 
