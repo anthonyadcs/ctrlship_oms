@@ -4,7 +4,7 @@
 	"main": "index.js",
 	"scripts": {
 		"dev": "tsx --watch --inspect-brk --env-file .env src/index.ts",
-		"watch": "tsc --watch --esModuleInterop --noEmit src/index.ts",
+		"watch": "tsc --watch --esModuleInterop --noEmit",
 		"prisma:seed": "tsx src/database/default_seed.ts"
 	},
 	"keywords": [],
