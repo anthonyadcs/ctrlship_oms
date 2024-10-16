@@ -1,5 +1,3 @@
-import UserRepository from "@modules/users/repositories/UserRepository";
-import bcrypt from "bcrypt";
 import { Request, Response } from "express";
 import { z } from "zod";
 import { UpdateUserUseCase } from "./UpdateUserUseCase";
