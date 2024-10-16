@@ -1,4 +1,4 @@
-import { User } from "@prisma/client";
+import { Permission, User } from "@prisma/client";
 
 interface ICreateUserDTO {
 	name: string;
@@ -17,9 +17,9 @@ interface IUpdateUserDTO {
 
 interface IUserRepository {
 	createUser(createdUser: ICreateUserDTO): Promise<void>;
-	updateUser(userEmail: string, { toUpdate }: Partial<IUpdateUserDTO>);
-	findByEmail(email): Promise<User | null>;
-	findPermission(userRole);
+	updateUser(userEmail: string, { toUpdate }: Partial<IUpdateUserDTO>): Promise<void>;
+	findByEmail(email: string): Promise<User | undefined>;
+	findPermission(userRole: string): Promise<Permission[] | undefined>;
 }
 
-export { IUserRepository, ICreateUserDTO, IUpdateUserDTO };
+export type { IUserRepository, ICreateUserDTO, IUpdateUserDTO };

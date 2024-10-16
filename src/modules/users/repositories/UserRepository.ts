@@ -5,7 +5,6 @@ import { ICreateUserDTO, IUpdateUserDTO, IUserRepository } from "./interfaces/IU
 class UserRepository implements IUserRepository {
 	async createUser(createdUser: ICreateUserDTO): Promise<void> {
 		try {
-			console.log(createdUser);
 			await prismaClient.user.create({
 				data: createdUser,
 			});
@@ -14,7 +13,7 @@ class UserRepository implements IUserRepository {
 		}
 	}
 
-	async findByEmail(email): Promise<User | null> {
+	async findByEmail(email: string): Promise<User | undefined> {
 		try {
 			const userByEmail = await prismaClient.user.findUniqueOrThrow({
 				where: {
