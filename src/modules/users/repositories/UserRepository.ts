@@ -9,7 +9,7 @@ class UserRepository implements IUserRepository {
 				data: createdUser,
 			});
 		} catch (error) {
-			throw new Error("Erro ao criar usuário no servidor.");
+			throw new Error("Erro ao criar usuário no servidor.", error);
 		}
 	}
 
@@ -37,7 +37,7 @@ class UserRepository implements IUserRepository {
 				});
 			}
 		} catch (error) {
-			throw new Error("Erro ao atualizar usuário no servidor.");
+			throw new Error("Erro ao atualizar usuário no servidor.", error);
 		}
 	}
 
