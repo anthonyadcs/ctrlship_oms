@@ -22,7 +22,9 @@ class DeleteUserUseCase {
 				const userData = await UserRepository.findByEmail(deletedUser);
 
 				if (!userData) {
-					throw new Error("Um ou mais usuários a serem deletados não foram encontrados.");
+					throw new Error(
+						"Um ou mais usuários a serem deletados não foram encontrados no servidor.",
+					);
 				}
 			}
 
@@ -30,11 +32,11 @@ class DeleteUserUseCase {
 			if (userData) {
 				deletingUserData = userData;
 			} else {
-				throw new Error("Usuário administrador esta operação não encontrado.");
+				throw new Error("O usuário administrador desta operação não foi encontrado no servidor.");
 			}
 		} catch (error) {
 			return {
-				status: 404,
+				status: 409,
 				message: error.message,
 			};
 		}
@@ -55,7 +57,8 @@ class DeleteUserUseCase {
 			if (!passwordMatch || !neededPermissions) {
 				return {
 					status: 403,
-					message: "O usuário administrador não possui permissão para finalizá-la.",
+					message:
+						"O usuário administrador não possui as permissões necessárias no servidor para finalizar esta ação.",
 				};
 			}
 		} catch (error) {
@@ -72,7 +75,7 @@ class DeleteUserUseCase {
 
 			return {
 				status: 200,
-				message: "Usuário deletado com sucesso.",
+				message: "Usuário deletado do servidor com sucesso.",
 			};
 		} catch (error) {
 			return {

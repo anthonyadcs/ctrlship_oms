@@ -1,4 +1,3 @@
-import UserRepository from "@modules/users/repositories/UserRepository";
 import { Request, Response } from "express";
 import { z } from "zod";
 import { DeleteUserUseCase } from "./DeleteUserUseCase";
