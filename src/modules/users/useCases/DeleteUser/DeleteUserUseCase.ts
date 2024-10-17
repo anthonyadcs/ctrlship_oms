@@ -26,9 +26,14 @@ class DeleteUserUseCase {
 						"Um ou mais usuários a serem deletados não foram encontrados no servidor.",
 					);
 				}
+
+				if (userData.roleName === "admin") {
+					throw new Error("O usuário administrador geral não pode ser deletado.");
+				}
 			}
 
 			const userData = await UserRepository.findByEmail(deletingUser.email);
+
 			if (userData) {
 				deletingUserData = userData;
 			} else {
