@@ -40,7 +40,7 @@ class CreateUserUseCase {
 		} else {
 			return {
 				status: 404,
-				message: "Usuário a atualizar ou usuário atualizador não encontrados.",
+				message: "Usuário a criar já existente ou usuário criador não existente.",
 			};
 		}
 
