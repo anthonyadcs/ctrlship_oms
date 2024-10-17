@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { createUserController } from "../modules/users/useCases/CreateUser/index";
+import { deleteUserController } from "../modules/users/useCases/DeleteUser/index";
 import { updateUserController } from "../modules/users/useCases/UpdateUser/index";
 
 const userRoutes = Router();
@@ -10,6 +11,10 @@ userRoutes.post("/user", async (request, response) => {
 
 userRoutes.patch("/user", async (request, response) => {
 	return await updateUserController.handle(request, response);
+});
+
+userRoutes.delete("/user", async (request, response) => {
+	return await deleteUserController.handle(request, response);
 });
 
 export { userRoutes };
