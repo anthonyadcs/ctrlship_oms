@@ -1,79 +1,110 @@
 import bcrypt from "bcrypt";
+import dotenv from "dotenv";
+import { createSlugId } from "../utils/createSlugId";
 import { prismaClient } from "./prismaClient";
 
+dotenv.config();
+
+const companys = [
+	{
+		name: "Demonstration Company LTDA.",
+	},
+];
+
 const seedUsers = [
-	{ name: "Admin", email: "admin@demo.com", password: "admin@demo", role: "admin" },
+	{
+		name: "Admin",
+		email: "admin@demo.com",
+		password: process.env.ADMIN_PASSWORD,
+		role: "general_admin",
+		company: "Demonstration Company LTDA.",
+	},
 	{
 		name: "Logistic Operator",
-		email: "logoperator@demo.com",
+		email: "logisticoperator@demo.com",
 		password: "logistic@demo",
 		role: "logistic_operator",
+		company: "Demonstration Company LTDA.",
 	},
 	{
 		name: "Stock Operator",
 		email: "stockeoperator@demo.com",
 		password: "stock@demo",
 		role: "stock_inspector",
+		company: "Demonstration Company LTDA.",
 	},
 	{
 		name: "Delivery Driver",
 		email: "deliverydriver@demo.com",
 		password: "delivery@demo",
 		role: "delivery_driver",
+		company: "Demonstration Company LTDA.",
 	},
-	{ name: "Company", email: "company@demo.com", password: "company@demo", role: "company" },
+	{
+		name: "Company",
+		email: "company@demo.com",
+		password: "company@demo",
+		role: "company_admin",
+		company: "Demonstration Company LTDA.",
+	},
 ];
 
-const roles = ["admin", "company", "stock_inspector", "logistic_operator", "delivery_driver"];
+const roles = [
+	"general_admin",
+	"company_admin",
+	"stock_inspector",
+	"logistic_operator",
+	"delivery_driver",
+];
 
 const permissions = [
 	{
-		name: "create_user_admin",
-		description: "Allows admin to create users",
+		name: "create_user_general_admin",
+		description: "Allows general admin to create users",
 	},
 	{
-		name: "update_user_admin",
-		description: "Allows admin to update users",
+		name: "update_user_general_admin",
+		description: "Allows general admin to update users",
 	},
 	{
-		name: "delete_user_admin",
-		description: "Allows admin to delete users",
+		name: "delete_user_general_admin",
+		description: "Allows general admin to delete users",
 	},
 	{
-		name: "create_order_admin",
-		description: "Allows admin to create orders",
+		name: "create_order_general_admin",
+		description: "Allows general admin to create orders",
 	},
 	{
-		name: "update_order_admin",
-		description: "Allows admin to update orders",
+		name: "update_order_general_admin",
+		description: "Allows general admin to update orders",
 	},
 	{
-		name: "delete_order_admin",
-		description: "Allows admin to delete orders",
+		name: "delete_order_general_admin",
+		description: "Allows general admin to delete orders",
 	},
 	{
-		name: "create_user_company",
-		description: "Allows company to create attributed users",
+		name: "create_user_company_admin",
+		description: "Allows company admin to create attributed users",
 	},
 	{
-		name: "update_user_company",
-		description: "Allows company to update attributed users",
+		name: "update_user_company_admin",
+		description: "Allows company admin to update attributed users",
 	},
 	{
-		name: "delete_user_company",
-		description: "Allows company to delete attributed users",
+		name: "delete_user_company_admin",
+		description: "Allows company admin to delete attributed users",
 	},
 	{
-		name: "create_order",
-		description: "Allows company to create orders",
+		name: "create_order_company_admin",
+		description: "Allows company admin to create orders",
 	},
 	{
-		name: "update_order",
-		description: "Allows company to update orders",
+		name: "update_order_company_admin",
+		description: "Allows company admin to update orders",
 	},
 	{
-		name: "delete_order",
-		description: "Allows company to delete order status",
+		name: "delete_order_company_admin",
+		description: "Allows company admin to delete order status",
 	},
 	{
 		name: "update_order_status",
@@ -134,12 +165,12 @@ async function createSeed() {
 					data: {
 						permission: {
 							connect: [
-								{ name: "create_user_admin" },
-								{ name: "update_user_admin" },
-								{ name: "delete_user_admin" },
-								{ name: "create_order_admin" },
-								{ name: "update_order_admin" },
-								{ name: "delete_order_admin" },
+								{ name: "create_user_general_admin" },
+								{ name: "update_user_general_admin" },
+								{ name: "delete_user_general_admin" },
+								{ name: "create_order_general_admin" },
+								{ name: "update_order_general_admin" },
+								{ name: "delete_order_general_admin" },
 							],
 						},
 					},
@@ -152,12 +183,12 @@ async function createSeed() {
 					data: {
 						permission: {
 							connect: [
-								{ name: "create_user_company" },
-								{ name: "update_user_company" },
-								{ name: "delete_user_company" },
-								{ name: "create_order" },
-								{ name: "update_order" },
-								{ name: "delete_order" },
+								{ name: "create_user_company_admin" },
+								{ name: "update_user_company_admin" },
+								{ name: "delete_user_company_admin" },
+								{ name: "create_order_company_admin" },
+								{ name: "update_order_company_admin" },
+								{ name: "delete_order_company_admin" },
 							],
 						},
 					},
@@ -203,9 +234,22 @@ async function createSeed() {
 		}
 	}
 
+	for (const company of companys) {
+		const companyExists = await prismaClient.company.findFirst({
+			where: { name: company.name },
+		});
+
+		if (!companyExists) {
+			await prismaClient.company.create({
+				data: company,
+			});
+		}
+	}
+
 	// Criação de usuários
 	for (const seedUser of seedUsers) {
 		const passwordHash = await bcrypt.hash(seedUser.password, 10);
+		const slugId = createSlugId(passwordHash);
 
 		const userExists = await prismaClient.user.findUnique({
 			where: { email: seedUser.email },
@@ -214,6 +258,7 @@ async function createSeed() {
 		if (!userExists) {
 			await prismaClient.user.create({
 				data: {
+					slugId,
 					name: seedUser.name,
 					email: seedUser.email,
 					passwordHash: passwordHash,
@@ -222,10 +267,21 @@ async function createSeed() {
 							name: seedUser.role,
 						},
 					},
+					company: {
+						connect: {
+							name: seedUser.company,
+						},
+					},
 				},
 			});
 		}
 	}
+
+	// await prismaClient.user.deleteMany({});
+	// await prismaClient.permission.deleteMany({});
+	// await prismaClient.role.deleteMany({});
+	// await prismaClient.company.deleteMany({});
+	// await prismaClient.order.deleteMany({});
 }
 
 createSeed();

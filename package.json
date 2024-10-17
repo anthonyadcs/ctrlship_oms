@@ -5,7 +5,8 @@
 	"scripts": {
 		"dev": "tsx --watch --inspect-brk --env-file .env src/index.ts",
 		"watch": "tsc --watch --esModuleInterop --noEmit",
-		"prisma:seed": "tsx src/database/default_seed.ts"
+		"seed": "tsx src/database/default_seed.ts",
+		"ps": "prisma studio"
 	},
 	"keywords": [],
 	"author": "",
@@ -16,11 +17,12 @@
 		"@types/bcrypt": "^5.0.2",
 		"@types/express": "^5.0.0",
 		"@types/node": "^22.7.5",
-		"prisma": "^5.20.0",
+		"dotenv": "^16.4.5",
+		"prisma": "^5.21.1",
 		"typescript": "^5.6.3"
 	},
 	"dependencies": {
-		"@prisma/client": "^5.20.0",
+		"@prisma/client": "^5.21.1",
 		"bcrypt": "^5.1.1",
 		"express": "^4.21.1",
 		"tsx": "^4.19.1",

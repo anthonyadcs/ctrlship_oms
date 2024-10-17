@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,13 +8,17 @@ datasource db {
 }
 model User {
   id String @id @default(uuid())
+  slugId String
   name String
   email String @unique
   passwordHash String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   roleName String
+  companyId String
+
   role Role @relation(fields: [roleName], references: [name])
+  company Company @relation(fields: [companyId], references: [id])
 
   @@map("users")
 }
@@ -27,8 +28,6 @@ model Role {
   name String @unique
   users User[]
   permission Permission[]
-
-
   @@map("roles")
 }
 
@@ -48,6 +47,20 @@ model Order {
   status String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  companyId String
+
+  company Company @relation(fields: [companyId], references: [id])
 
   @@map("orders")
+}
+
+model Company {
+  id String @id @default(uuid())
+  name String @unique
+  employees User[]
+  orders Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("companies")
 }
