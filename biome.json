@@ -28,7 +28,7 @@
 			},
 			"suspicious": {
 				"noConsoleLog": "off",
-				"noExplicitAny": "warn"
+				"noExplicitAny": "off"
 			},
 			"style": {
 				"useImportType": "off",
@@ -52,6 +52,9 @@
 					}
 				},
 				"noParameterProperties": "off"
+			},
+			"complexity": {
+				"noExcessiveCognitiveComplexity": "off"
 			},
 			"all": true
 		}

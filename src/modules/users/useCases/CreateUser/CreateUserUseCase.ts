@@ -1,55 +1,69 @@
+import { UserRepository } from "@modules/users/repositories/UserRepository";
+import { ICreateUserDTO } from "@modules/users/repositories/interfaces/IUserRepository";
 import { User } from "@prisma/client";
 import { comparePasswords } from "@utils/comparePasswords";
+import { createSlugId } from "@utils/createSlugId";
 import bcrypt from "bcrypt";
-import UserRepository from "../../repositories/UserRepository";
 
-interface IRequest {
+type IRequest = {
 	createrUser: {
+		id: string;
 		email: string;
 		password: string;
 	};
 	createdUser: {
 		name: string;
 		email: string;
-		passwordHash: string;
+		password: string;
 		roleName: string;
+		companyId: string;
 	};
-}
+};
 class CreateUserUseCase {
+	constructor(private userRepository: UserRepository) {}
 	async execute({ createrUser, createdUser }: IRequest) {
 		let createrUserData: User;
-		let createdUserData: User;
+		let slugId: User["slugId"];
 
 		try {
-			const createdUserExists = await UserRepository.findByEmail(createdUser.email);
+			const createdUserExists = await this.userRepository.findByEmail(createdUser.email);
 
 			if (createdUserExists) {
 				throw new Error("O usuário já está cadastrado no servidor.");
 			}
 
-			const createrUserExists = await UserRepository.findByEmail(createrUser.email);
-
-			if (!createrUserExists) {
+			if (
+				createdUser.roleName === "admin" ||
+				(createdUser.roleName === "company" && createrUserData.roleName === "company")
+			) {
 				throw new Error(
-					"O usuário administrador não foi desta operação não foi encontrado no servidor",
+					"O usuário administrador não possui permissão para criar um usuário com esta ocupação no servidor.",
 				);
 			}
 
+			const createrUserExists = await this.userRepository.findById(createrUser.id);
+
+			if (!createrUserExists) {
+				throw new Error("O usuário administrador desta operação não foi encontrado no servidor.");
+			}
+
 			createrUserData = createrUserExists;
-			createdUserData = createdUserExists;
-		} catch (error) {
-			return {
-				status: 409,
-				message: error.message,
-			};
+		} catch (error: any) {
+			throw new Error(error);
+
+			// return {
+			// 	status: 409,
+			// 	message: error,
+			// };
 		}
 
 		try {
-			const permissions = await UserRepository.findPermission(createrUserData.roleName);
+			const permissions = await this.userRepository.findPermission(createrUserData.roleName);
 
 			const neededPermissions = permissions.some(
 				(permission) =>
-					permission.name === "create_user_admin" || permission.name === "create_user_company",
+					permission.name === "create_user_general_admin" ||
+					permission.name === "create_user_company_admin",
 			);
 
 			const passwordMatch = await comparePasswords(
@@ -57,14 +71,29 @@ class CreateUserUseCase {
 				createrUserData.passwordHash,
 			);
 
-			if (!neededPermissions || !passwordMatch) {
+			if (!passwordMatch || createrUser.email !== createrUserData.email) {
+				return {
+					status: 409,
+					message: "Os dados do usuário administrador não conferem.",
+				};
+			}
+
+			if (!neededPermissions) {
 				return {
 					status: 403,
 					message:
 						"O usuário administrador não possui as permissões necessárias no servidor para finalizar esta ação.",
 				};
 			}
-		} catch (error) {
+
+			if (createrUserData.companyId !== createdUser.companyId) {
+				return {
+					status: 400,
+					message:
+						"O usuário administrador não possui as permissões necessárias no servidor para finalizar esta ação.",
+				};
+			}
+		} catch (error: any) {
 			return {
 				status: 500,
 				message: error.message,
@@ -72,14 +101,38 @@ class CreateUserUseCase {
 		}
 
 		try {
-			createdUser.passwordHash = await bcrypt.hash(createdUser.passwordHash, 10);
-			await UserRepository.createUser(createdUser);
+			const uniqueHash = `${createdUser.name.split(" ")[0]}_${createdUser.email.split("@")[0]}_${createdUser.roleName.split("_")[0]}_${createdUser.password}`;
 
+			slugId = createSlugId(uniqueHash, 8);
+
+			const createdUserExists = await this.userRepository.findBySlugId(slugId);
+
+			if (createdUserExists && createdUserExists.companyId === createdUser.companyId) {
+				throw new Error("O usuário já está cadastrado no servidor.");
+			}
+		} catch (error: any) {
+			return {
+				status: 409,
+				message: error.message,
+			};
+		}
+
+		const newUser: ICreateUserDTO = {
+			slugId,
+			name: createdUser.name,
+			email: createdUser.email,
+			passwordHash: await bcrypt.hash(createdUser.password, 10),
+			companyId: createdUser.companyId,
+			role: createdUser.roleName,
+		};
+
+		try {
+			await this.userRepository.createUser(newUser);
 			return {
 				status: 201,
-				message: "Usuário criado com sucesso.",
+				message: "Usuário adicionado ao servidor com sucesso.",
 			};
-		} catch (error) {
+		} catch (error: any) {
 			return {
 				status: 500,
 				message: error.message,

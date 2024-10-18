@@ -6,7 +6,22 @@ class UserRepository implements IUserRepository {
 	async createUser(createdUser: ICreateUserDTO): Promise<void> {
 		try {
 			await prismaClient.user.create({
-				data: createdUser,
+				data: {
+					slugId: createdUser.slugId,
+					name: createdUser.name,
+					email: createdUser.email,
+					passwordHash: createdUser.passwordHash,
+					role: {
+						connect: {
+							name: createdUser.role,
+						},
+					},
+					company: {
+						connect: {
+							id: createdUser.companyId,
+						},
+					},
+				},
 			});
 		} catch (error) {
 			throw new Error("Erro ao criar usuário no servidor.", error);
@@ -40,8 +55,6 @@ class UserRepository implements IUserRepository {
 		}
 	}
 
-	async deleteManyUsers(usersEmail);
-
 	async findByEmail(email: string): Promise<User | undefined> {
 		try {
 			const userByEmail = await prismaClient.user.findUnique({
@@ -52,7 +65,7 @@ class UserRepository implements IUserRepository {
 
 			return userByEmail;
 		} catch (error) {
-			throw new Error("Usuário não encontrado");
+			throw new Error("Usuário não encontrado.");
 		}
 	}
 
@@ -73,6 +86,32 @@ class UserRepository implements IUserRepository {
 			throw new Error("Erro ao buscar permissões do usuário no servidor.", error);
 		}
 	}
+
+	async findById(id: string): Promise<User> {
+		try {
+			const userById = await prismaClient.user.findUnique({
+				where: {
+					id,
+				},
+			});
+			return userById;
+		} catch (error) {
+			throw new Error("Usuário não encontrado.", error);
+		}
+	}
+
+	async findBySlugId(slugId: string): Promise<User> {
+		try {
+			const userBySlugId = await prismaClient.user.findFirst({
+				where: {
+					slugId,
+				},
+			});
+			return userBySlugId;
+		} catch (error) {
+			throw new Error("Usuário não encontrado");
+		}
+	}
 }
 
-export default new UserRepository();
+export { UserRepository };

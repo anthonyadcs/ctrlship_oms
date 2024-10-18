@@ -1,8 +1,10 @@
+import express from "express";
 import { Request, Response } from "express";
 import { z } from "zod";
 import { CreateUserUseCase } from "./CreateUserUseCase";
 
 const createrUserSchema = z.object({
+	id: z.string().uuid(),
 	email: z.string().email(),
 	password: z.string().min(6).max(128),
 });
@@ -10,8 +12,9 @@ const createrUserSchema = z.object({
 const createdUserSchema = z.object({
 	name: z.string().min(3).max(30),
 	email: z.string().email(),
-	passwordHash: z.string().min(6).max(128),
+	password: z.string().min(6).max(128),
 	roleName: z.string(),
+	companyId: z.string(),
 });
 
 class CreateUserController {

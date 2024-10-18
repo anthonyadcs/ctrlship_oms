@@ -1,14 +1,14 @@
 {
 	"compilerOptions": {
-		"target": "ES2022", // O padrão de saída do código
-		"module": "node16", // O sistema de módulos a ser usado
+		"target": "es2016", // O padrão de saída do código
+		"module": "commonjs", // O sistema de módulos a ser usado
 		"lib": ["ES2023"], // As bibliotecas padrão a serem incluídas
-		"strict": false, // Desabilita todas as verificações estritas
+		"strict": true, // Desabilita todas as verificações estritas
 		"noImplicitAny": false, // Permite tipos implícitos "any"
 		"strictNullChecks": false, // Desabilita checagem de null e undefined
 		"skipLibCheck": true, // Ignora checagem de tipos em arquivos .d.ts
 		"forceConsistentCasingInFileNames": true, // Força consistência na capitalização dos nomes de arquivos
-		"moduleResolution": "node16",
+		"esModuleInterop": true,
 		"baseUrl": "./src", // Define a base do caminho para resolução de módulos
 		"paths": {
 			"@modules/*": ["modules/*"],
@@ -16,14 +16,9 @@
 			"@utils/*": ["utils/*"]
 		},
 		"noEmit": true, // Não emite arquivos de saída
-		"isolatedModules": true // Garante que cada arquivo é tratado como um módulo
+		"isolatedModules": true,
+		"rootDir": "./src" // Garante que cada arquivo é tratado como um módulo
 	},
 	"include": ["src/**/*"], // Inclui todos os arquivos .ts na pasta src
-	"exclude": ["node_modules"],
-	"baseUrl": "./src", // Exclui a pasta node_modules
-	"paths": {
-		"@modules/*": ["modules/*"],
-		"@database/*": ["database/*"],
-		"@utils/*": ["utils/*"]
-	}
+	"exclude": ["node_modules"]
 }

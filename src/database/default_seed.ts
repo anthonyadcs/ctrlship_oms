@@ -13,8 +13,8 @@ const companys = [
 
 const seedUsers = [
 	{
-		name: "Admin",
-		email: "admin@demo.com",
+		name: "General Admin",
+		email: "generaladmin@demo.com",
 		password: process.env.ADMIN_PASSWORD,
 		role: "general_admin",
 		company: "Demonstration Company LTDA.",
@@ -41,8 +41,8 @@ const seedUsers = [
 		company: "Demonstration Company LTDA.",
 	},
 	{
-		name: "Company",
-		email: "company@demo.com",
+		name: "Company Admin",
+		email: "companyadmin@demo.com",
 		password: "company@demo",
 		role: "company_admin",
 		company: "Demonstration Company LTDA.",
@@ -159,7 +159,7 @@ async function createSeed() {
 		});
 
 		if (existingRole) {
-			if (role === "admin") {
+			if (role === "general_admin") {
 				await prismaClient.role.update({
 					where: { name: role },
 					data: {
@@ -177,7 +177,7 @@ async function createSeed() {
 				});
 			}
 
-			if (role === "company") {
+			if (role === "company_admin") {
 				await prismaClient.role.update({
 					where: { name: role },
 					data: {
@@ -249,7 +249,7 @@ async function createSeed() {
 	// Criação de usuários
 	for (const seedUser of seedUsers) {
 		const passwordHash = await bcrypt.hash(seedUser.password, 10);
-		const slugId = createSlugId(passwordHash);
+		const slugId = createSlugId(passwordHash, 8);
 
 		const userExists = await prismaClient.user.findUnique({
 			where: { email: seedUser.email },
