@@ -33,8 +33,8 @@ class CreateUserUseCase {
 			}
 
 			if (
-				createdUser.roleName === "admin" ||
-				(createdUser.roleName === "company" && createrUserData.roleName === "company")
+				createdUser.roleName === "general_admin" ||
+				(createdUser.roleName === "company_admin" && createrUserData.roleName === "company_admin")
 			) {
 				throw new Error(
 					"O usuário administrador não possui permissão para criar um usuário com esta ocupação no servidor.",
@@ -49,12 +49,10 @@ class CreateUserUseCase {
 
 			createrUserData = createrUserExists;
 		} catch (error: any) {
-			throw new Error(error);
-
-			// return {
-			// 	status: 409,
-			// 	message: error,
-			// };
+			return {
+				status: 409,
+				message: error.message,
+			};
 		}
 
 		try {
