@@ -3,12 +3,13 @@ import { z } from "zod";
 import { DeleteUserUseCase } from "./DeleteUserUseCase";
 
 const deletingUserschema = z.object({
+	id: z.string().uuid(),
 	email: z.string().email(),
 	password: z.string().min(3).max(128),
 });
 
 const deletedUsersSchema = z.object({
-	emails: z.array(z.string().email()),
+	ids: z.array(z.string().uuid()),
 });
 
 class DeleteUserController {
@@ -19,7 +20,7 @@ class DeleteUserController {
 		try {
 			deletingUserschema.parse(deletingUser);
 			deletedUsersSchema.parse(deletedUsers);
-		} catch (error) {
+		} catch (error: any) {
 			return response.status(422).json({
 				message: "Parâmetros incorretos. Por favor, tente novamente mais tarde",
 				error: error.issues.map((err) => err.message),

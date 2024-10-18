@@ -43,11 +43,11 @@ class UserRepository implements IUserRepository {
 		}
 	}
 
-	async deleteUser(userEmail: string): Promise<void> {
+	async deleteUser(id: string): Promise<void> {
 		try {
 			await prismaClient.user.delete({
 				where: {
-					email: userEmail,
+					id,
 				},
 			});
 		} catch (error) {
