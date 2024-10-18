@@ -10,16 +10,14 @@ interface ICreateUserDTO {
 }
 
 interface IUpdateUserDTO {
-	toUpdate: {
-		name?: string;
-		email?: string;
-		passwordHash?: string;
-	};
+	name?: string;
+	email?: string;
+	passwordHash?: string;
 }
 
 interface IUserRepository {
 	createUser(createdUser: ICreateUserDTO): Promise<void>;
-	updateUser(userEmail: string, { toUpdate }: Partial<IUpdateUserDTO>): Promise<void>;
+	updateUser(userEmail: string, toUpdate: IUpdateUserDTO): Promise<void>;
 	deleteUser(userEmail: string): Promise<void>;
 	findByEmail(email: string): Promise<User>;
 	findPermission(userRole: string): Promise<Permission[]>;

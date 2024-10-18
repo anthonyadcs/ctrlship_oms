@@ -28,11 +28,11 @@ class UserRepository implements IUserRepository {
 		}
 	}
 
-	async updateUser(userEmail: string, { toUpdate }: Partial<IUpdateUserDTO>): Promise<void> {
+	async updateUser(userId: string, toUpdate: IUpdateUserDTO): Promise<void> {
 		try {
 			for (const [key, value] of Object.entries(toUpdate)) {
 				await prismaClient.user.update({
-					where: { email: userEmail },
+					where: { id: userId },
 					data: {
 						[key]: value,
 					},
@@ -109,7 +109,7 @@ class UserRepository implements IUserRepository {
 			});
 			return userBySlugId;
 		} catch (error) {
-			throw new Error("Usuário não encontrado");
+			throw new Error("Usuário não encontrado", error);
 		}
 	}
 }

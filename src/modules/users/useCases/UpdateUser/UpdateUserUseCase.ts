@@ -1,91 +1,107 @@
-import UserRepository from "@modules/users/repositories/UserRepository";
+import { UserRepository } from "@modules/users/repositories/UserRepository";
+import { IUpdateUserDTO } from "@modules/users/repositories/interfaces/IUserRepository";
+import { User } from "@prisma/client";
 import { comparePasswords } from "@utils/comparePasswords";
 import bcrypt from "bcrypt";
 
 interface IRequest {
 	updaterUser: {
+		id: string;
 		email: string;
 		password: string;
 	};
 
 	updatedUser: {
-		currentEmail: string;
+		id: string;
 		name?: string;
 		email?: string;
-		passwordHash?: string;
+		password?: string;
 	};
 }
 
 class UpdateUserUseCase {
+	constructor(private userRepository: UserRepository) {}
+
 	async execute({ updatedUser, updaterUser }: IRequest) {
-		const updatedUserExists = await UserRepository.findByEmail(updatedUser.currentEmail);
+		let updaterUserData: User;
 
-		const updaterUserExists = await UserRepository.findByEmail(updaterUser.email);
+		try {
+			const updatedUserExists = await this.userRepository.findById(updatedUser.id);
 
-		//Valida se o usuário atualizador e o usuário atualizado existem
-		if (updaterUserExists && updatedUserExists) {
-			//Verifica se o usuário tem permissão para atualizar usuários
-			const permissions = await UserRepository.findPermission(updaterUserExists.roleName);
+			if (!updatedUserExists) {
+				throw new Error("O usuário a ser atualizado não foi encontrado no servidor.");
+			}
 
-			const permission = permissions.find((permission) => {
-				return permission.name === "update_user_admin" || permission.name === "update_user_company";
-			});
+			const updaterUserExists = await this.userRepository.findByEmail(updaterUser.email);
 
-			if (
-				permission === undefined ||
-				(permission.name === "update_user_company" && updatedUserExists.roleName === "admin")
-			) {
+			if (updaterUserExists) {
+				updaterUserData = updaterUserExists;
+			} else {
+				throw new Error("O usuário administrador desta operação não foi encontrado no servidor.");
+			}
+		} catch (error: any) {
+			return {
+				status: 409,
+				message: error.message,
+			};
+		}
+
+		try {
+			const permissions = await this.userRepository.findPermission(updaterUserData.roleName);
+
+			const neededPermissions = permissions.some(
+				(permission) =>
+					permission.name === "delete_user_general_admin" ||
+					permission.name === "delete_user_company_admin",
+			);
+
+			if (!neededPermissions) {
 				return {
 					status: 403,
-					message: "Você não possui permissão para atualizar usuários.",
+					message:
+						"O usuário administrador não possui as permissões necessárias no servidor para finalizar esta ação.",
 				};
 			}
-		} else {
+
+			const emailMatch = updaterUser.email === updaterUserData.email;
+			const passwordMatch = await comparePasswords(
+				updaterUser.password,
+				updaterUserData.passwordHash,
+			);
+
+			if (!(emailMatch || !passwordMatch)) {
+				return {
+					status: 401,
+					message: "Email ou senha  do usuário administrador incorretos.",
+				};
+			}
+		} catch (error: any) {
 			return {
-				status: 404,
-				message: "Usuário a atualizar ou usuário atualizador não encontrados",
+				status: 500,
+				message: error.message,
 			};
 		}
 
-		//Verifica se a senha do usuário atualizador é correta
-		if (!comparePasswords(updaterUser.password, updaterUserExists.passwordHash)) {
+		const toUpdate: IUpdateUserDTO = {
+			...(updatedUser.name ? { name: updatedUser.name } : {}),
+			...(updatedUser.email ? { email: updatedUser.email } : {}),
+			...(updatedUser.password
+				? { passwordHash: await bcrypt.hash(updatedUser.password, 10) }
+				: {}),
+		};
+
+		try {
+			await this.userRepository.updateUser(updatedUser.id, toUpdate);
+
 			return {
-				status: 401,
-				message: "Email ou senha  do usuário atualizador incorretos.",
+				status: 200,
+				message: "Usuário atualizado no servidor. com sucesso.",
 			};
-		}
-
-		// Gera o hash de acordo com a nova senha fornecida
-		const newPasswordHash = await bcrypt.hash(updatedUser.passwordHash, 10);
-
-		updatedUser.passwordHash = newPasswordHash;
-
-		// Valida se os dados de atualização são válidos e realiza a solicitação para o banco de dados
-		for (const [key, value] of Object.entries(updatedUser)) {
-			try {
-				if (!value) {
-					throw new Error("Pelo menos um campo de atualização deve ser fornecido.");
-				}
-
-				if (key !== "currentEmail") {
-					await UserRepository.updateUser(updatedUser.currentEmail, {
-						toUpdate: {
-							[key]: value,
-						},
-					});
-				} else {
-					continue;
-				}
-				return {
-					status: 201,
-					message: "Dados alterados com sucesso",
-				};
-			} catch (error) {
-				return {
-					status: 500,
-					message: error,
-				};
-			}
+		} catch (error: any) {
+			return {
+				status: 500,
+				message: error.message,
+			};
 		}
 	}
 }

@@ -3,13 +3,14 @@ import { z } from "zod";
 import { UpdateUserUseCase } from "./UpdateUserUseCase";
 
 const updatedUserSchema = z.object({
-	currentEmail: z.string().email(),
+	id: z.string().uuid(),
 	email: z.string().email().optional(),
 	name: z.string().min(3).max(30).optional(),
 	password: z.string().min(6).max(128).optional(),
 });
 
 const updaterUserSchema = z.object({
+	id: z.string().uuid(),
 	email: z.string().email(),
 	password: z.string().min(3).max(128),
 });
@@ -22,7 +23,7 @@ class UpdateUserController {
 			const { updatedUser, updaterUser } = request.body;
 			updatedUserSchema.parse(updatedUser);
 			updaterUserSchema.parse(updaterUser);
-		} catch (error) {
+		} catch (error: any) {
 			return response.status(422).json({
 				message: "Parâmetros incorretos. Por favor, tente novamente mais tarde",
 				error: error.issues.map((err) => err.message),
