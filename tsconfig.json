@@ -17,7 +17,8 @@
 		},
 		"noEmit": true, // Não emite arquivos de saída
 		"isolatedModules": true,
-		"rootDir": "./src" // Garante que cada arquivo é tratado como um módulo
+		"rootDir": "./src", // Garante que cada arquivo é tratado como um módulo
+		"typeRoots": ["./src/@types"]
 	},
 	"include": ["src/**/*"], // Inclui todos os arquivos .ts na pasta src
 	"exclude": ["node_modules"]
