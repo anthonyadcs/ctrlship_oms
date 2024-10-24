@@ -13,6 +13,15 @@ class CompanyRepository implements ICompanyRepository {
 			throw new Error("Erro na busca da empresa no servidor.");
 		}
 	}
+
+	async findAll(): Promise<Company[]> {
+		try {
+			const companies = await prismaClient.company.findMany({});
+			return companies;
+		} catch (error) {
+			throw new Error("Erro na busca das empresas no servidor.");
+		}
+	}
 }
 
 export { CompanyRepository };
