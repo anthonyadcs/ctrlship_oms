@@ -35,6 +35,7 @@
 				"useExportType": "off",
 				"noDefaultExport": "off",
 				"noInferrableTypes": "off",
+				"noNamespace": "off",
 				"useNamingConvention": {
 					"level": "warn",
 					"options": {
