@@ -42,8 +42,11 @@ class LoginUserUseCase {
 
 		return {
 			status: 200,
-			user: userLogin,
-			token,
+			message: "Login realizado com sucesso",
+			data: {
+				userLogin,
+				token,
+			},
 		};
 	}
 }
