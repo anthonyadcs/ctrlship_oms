@@ -1,6 +1,6 @@
+import { createSlugId } from "@utils/createSlugId";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
-import { createSlugId } from "../utils/createSlugId";
 import { prismaClient } from "./prismaClient";
 
 dotenv.config();
@@ -14,6 +14,7 @@ const companys = [
 const seedUsers = [
 	{
 		name: "General Admin",
+		slugId: createSlugId("general_admin@demo_demonstration", 8),
 		email: "generaladmin@demo.com",
 		password: process.env.ADMIN_PASSWORD,
 		role: "general_admin",
@@ -21,20 +22,23 @@ const seedUsers = [
 	},
 	{
 		name: "Logistic Operator",
+		slugId: createSlugId("logistic_operator@demo_demonstration", 8),
 		email: "logisticoperator@demo.com",
 		password: "logistic@demo",
 		role: "logistic_operator",
 		company: "Demonstration Company LTDA.",
 	},
 	{
-		name: "Stock Operator",
-		email: "stockeoperator@demo.com",
+		name: "Stock Inspector",
+		slugId: createSlugId("stock_inspector_@demo_demonstration", 8),
+		email: "stockinspector@demo.com",
 		password: "stock@demo",
 		role: "stock_inspector",
 		company: "Demonstration Company LTDA.",
 	},
 	{
 		name: "Delivery Driver",
+		slugId: createSlugId("delivery_driver@demo_demonstration", 8),
 		email: "deliverydriver@demo.com",
 		password: "delivery@demo",
 		role: "delivery_driver",
@@ -42,6 +46,7 @@ const seedUsers = [
 	},
 	{
 		name: "Company Admin",
+		slugId: createSlugId("company_admin@demo_demonstration", 8),
 		email: "companyadmin@demo.com",
 		password: "company@demo",
 		role: "company_admin",
@@ -121,7 +126,6 @@ const permissions = [
 ];
 
 async function createSeed() {
-	// Criação de roles
 	for (const role of roles) {
 		const roleExists = await prismaClient.role.findFirst({
 			where: { name: role },
@@ -278,10 +282,10 @@ async function createSeed() {
 	}
 
 	// await prismaClient.user.deleteMany({});
-	// await prismaClient.permission.deleteMany({});
-	// await prismaClient.role.deleteMany({});
 	// await prismaClient.company.deleteMany({});
+	// await prismaClient.permission.deleteMany({});
 	// await prismaClient.order.deleteMany({});
+	// await prismaClient.role.deleteMany({});
 }
 
 createSeed();
