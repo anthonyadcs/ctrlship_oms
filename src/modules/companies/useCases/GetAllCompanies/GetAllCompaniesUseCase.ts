@@ -21,7 +21,7 @@ class GetAllCompaniesUseCase {
 		} catch (error: any) {
 			return {
 				status: 500,
-				error: error.message,
+				message: error.message,
 			};
 		}
 	}
