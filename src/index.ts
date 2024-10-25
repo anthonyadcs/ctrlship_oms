@@ -1,6 +1,8 @@
+import cors from "cors";
 import express from "express";
-import { userRoutes } from "./routes/user.routes";
 import { prismaClient } from "./database/prismaClient";
+import { companyRoutes } from "./routes/company.routes";
+import { userRoutes } from "./routes/user.routes";
 
 async function startServer() {
 	try {
@@ -8,8 +10,10 @@ async function startServer() {
 		console.log("Prisma conectado ao banco de dados");
 
 		const app = express();
+		app.use(cors());
 		app.use(express.json());
 		app.use(userRoutes);
+		app.use(companyRoutes);
 
 		app.listen("8080", () => {
 			console.log("Listening");

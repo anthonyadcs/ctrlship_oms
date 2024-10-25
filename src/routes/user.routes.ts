@@ -1,7 +1,9 @@
+import { cors } from "cors";
 import { Router } from "express";
+import { authMiddlaware } from "../middleware/authMiddleware";
 import { createUserController } from "../modules/users/useCases/CreateUser/index";
 import { deleteUserController } from "../modules/users/useCases/DeleteUser/index";
-import { getSessionDataController } from "../modules/users/useCases/GetSessionData/index";
+import { getUserController } from "../modules/users/useCases/GetUser/index";
 import { loginUserController } from "../modules/users/useCases/LoginUser/index";
 import { updateUserController } from "../modules/users/useCases/UpdateUser/index";
 
@@ -27,8 +29,9 @@ userRoutes.post("/user/login", async (request, response) => {
 	return await loginUserController.handle(request, response);
 });
 
-userRoutes.get("/user/session", async (request, response) => {
-	return await getSessionDataController.handle(request, response);
+//@ts-ignore
+userRoutes.get("/user", async (request, response) => {
+	return await getUserController.handle(request, response);
 });
 
 export { userRoutes };

@@ -102,7 +102,7 @@ class UserRepository implements IUserRepository {
 
 	async findBySlugId(slugId: string): Promise<User> {
 		try {
-			const userBySlugId = await prismaClient.user.findFirst({
+			const userBySlugId = await prismaClient.user.findUnique({
 				where: {
 					slugId,
 				},
